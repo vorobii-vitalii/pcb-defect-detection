@@ -11,7 +11,6 @@ import ai.djl.basicdataset.cv.classification.ImageFolder;
 import ai.djl.basicmodelzoo.cv.classification.ResNetV1;
 import ai.djl.engine.Engine;
 import ai.djl.metric.Metrics;
-import ai.djl.modality.cv.Image;
 import ai.djl.modality.cv.transform.Resize;
 import ai.djl.modality.cv.transform.ToTensor;
 import ai.djl.ndarray.types.Shape;
@@ -20,8 +19,6 @@ import ai.djl.repository.Repository;
 import ai.djl.training.DefaultTrainingConfig;
 import ai.djl.training.EasyTrain;
 import ai.djl.training.Trainer;
-import ai.djl.training.TrainingResult;
-import ai.djl.training.dataset.Dataset;
 import ai.djl.training.dataset.RandomAccessDataset;
 import ai.djl.training.evaluator.Accuracy;
 import ai.djl.training.listener.SaveModelTrainingListener;
@@ -38,7 +35,7 @@ public class PCBDefectDetectionModelTrain {
 	public static final String LOCATION = "/work/pcb-defect-detection-histogram-approach/datasets/PCB_DATASET/images";
 	public static final String PCB_DATASET = "folder";
 	public static final String MODEL_NAME = "ml_pcb_defect_detection";
-	public static final int NUM_EPOCH = 10;
+	public static final int NUM_EPOCH = 2;
 	public static final double SPLIT_PERCENT = 0.9;
 
 	public static void main(String[] args) throws TranslateException, IOException {
@@ -99,7 +96,11 @@ public class PCBDefectDetectionModelTrain {
 //				.optFlag(Image.Flag.COLOR)
 				.setRepository(repository)
 				.addTransform(new Resize(PCBModel.WIDTH, PCBModel.HEIGHT))
+				.addTransform(new LoggingTransformer("Before: "))
+				.addTransform(new ToHistogramTransformer())
+				.addTransform(new LoggingTransformer("After resize: "))
 				.addTransform(new ToTensor())
+				.addTransform(new LoggingTransformer("After toTensor"))
 				.setSampling(BATCH_SIZE, true, true)
 				.build();
 		// call prepare before using
